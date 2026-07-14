@@ -1,0 +1,10 @@
+import { Search } from 'lucide-react'
+import { useState } from 'react'
+import type { EventCategory } from '../../simulation/models/types'
+import { useSimulationStore } from '../../stores/useSimulationStore'
+
+export function EventLog({ tall = false }: { tall?: boolean }): React.JSX.Element {
+  const events = useSimulationStore((store) => store.simulation.events); const [filter, setFilter] = useState<'all' | EventCategory>('all'); const [query, setQuery] = useState('')
+  const shown = events.filter((event) => (filter === 'all' || event.type === filter) && `${event.message} ${event.source} ${event.lotId ?? ''} ${event.vehicleId ?? ''}`.toLowerCase().includes(query.toLowerCase()))
+  return <div className="panel"><div className="panel-header"><h3>Event log</h3><span className="tiny muted">{shown.length} events</span></div><div className="panel-body" style={{paddingBottom: 5}}><div className="control-row"><div style={{position:'relative', flex:1}}><Search size={11} style={{position:'absolute',left:8,top:9,color:'#628096'}}/><input className="input" aria-label="Search event log" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search events…" style={{width:'100%',paddingLeft:25}} /></div><select className="select" value={filter} onChange={(event) => setFilter(event.target.value as 'all' | EventCategory)}><option value="all">All</option><option value="transport">Transport</option><option value="processing">Processing</option><option value="fault">Fault</option><option value="scheduling">Scheduling</option><option value="completion">Completion</option></select></div></div><div className="event-log" style={tall ? {height:470} : undefined}>{shown.length ? shown.map((event) => <div className="event" key={event.id}><span className="mono muted">{event.timestamp.toFixed(0)}s</span><span className={`sev ${event.severity}`} /><span className="source truncate">{event.source}</span><span className="message">{event.message}</span></div>) : <div className="empty">No matching events yet.</div>}</div></div>
+}
